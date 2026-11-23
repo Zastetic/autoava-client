@@ -1,9 +1,12 @@
-# AutoAVA — cliente (teste de instalação)
+# AutoAVA ferramenta (bookmarklet) — instalação
 
-Cliente de teste para validar o fluxo de instalação por favorito (bookmarklet) e o popup na página.
+> **Separado do site.** Este repositório é a **ferramenta** que roda na aba do AVA (bookmarklet).
+> O **site** (login com RA, fila de jobs, painel) é outro produto, em `www.autoava.us`.
+> A ferramenta nunca pede senha: ela lê a sessão já aberta na página.
 
-**O que este repositório contém:** apenas a interface do cliente — popup, campo de chave e leitura da
-sessão já aberta na página. Nenhuma automação, nenhuma senha, nenhuma chamada de execução.
+
+**O que este repositório contém:** a interface da ferramenta — popup, saldo de pontos, detecção do RA
+pela sessão e criação de checkout. Nenhuma automação roda aqui, nenhuma senha é pedida.
 
 ## Instalar (2 passos)
 

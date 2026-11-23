@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.3.0-teste';
+  var VERSION = '0.3.2-teste';
   var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
@@ -75,7 +75,7 @@
     '<button class="act ghost diag">Diagnostico</button></div>',
     '<div class="log"></div>',
     '</div>',
-    '<div class="foot"><span>AUTOAVA</span><span>v' + VERSION + '</span></div>'
+    '<div class="foot"><span>AUTOAVA ferramenta</span><span>v' + VERSION + '</span></div>'
   ].join('');
 
   shadow.appendChild(document.createElement('style')).textContent = css;

@@ -11,7 +11,7 @@ payload = json.dumps(code).replace("<", "\\u003c")
 
 page = f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AutoAVA - instalar cliente</title>
+<title>AutoAVA ferramenta - instalar</title>
 <style>
 :root{{color-scheme:dark}}
 *{{box-sizing:border-box}}
@@ -38,8 +38,8 @@ color:#e0a0a0;font-size:13px;line-height:1.6;margin-top:12px;display:none}}
 </style></head>
 <body><div class="wrap">
 <div class="brand">AUTOAVA</div>
-<h1>Instalar o cliente em 2 passos</h1>
-<p class="sub">O cliente e so uma interface: ele le a sessao que voce ja abriu e conversa com o servidor.
+<h1>Instalar a ferramenta em 2 passos</h1>
+<p class="sub">A ferramenta e separada do site: roda na sua aba do AVA, le a sessao que voce ja abriu e conversa com a API.
 Nenhuma senha e digitada aqui.</p>
 
 <div class="card">
