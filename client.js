@@ -214,6 +214,7 @@
         body: JSON.stringify({ ra: state.ra, pacote: 'bim4', ref: 'teste-' + Date.now() })
       });
       if (t && t.ok) { state.saldo = t.saldo | 0; paintSaldo(); elRun.disabled = state.saldo < CUSTO_SEMANA; log('creditado +' + t.pontos + ' · saldo ' + t.saldo); }
+      else if (t && t.erro === 'rota_interna') { log('compra simulada so em ambiente local'); }
       else { log('compra falhou: ' + (t && t.erro || '')); }
       return;
     }
@@ -247,6 +248,7 @@
     });
     elBar.style.width = '100%';
     if (d && d.ok) { state.saldo = d.saldo | 0; paintSaldo(); log('consumiu ' + d.cobrado + ' · saldo ' + d.saldo); }
+    else if (d && d.erro === 'rota_interna') { log('execucao roda no servidor · o popup so agenda'); }
     else { log('consumo falhou: ' + (d && d.erro || '')); }
     state.busy = false; elRun.disabled = state.saldo < CUSTO_SEMANA;
   });
