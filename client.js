@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.5.1';
+  var VERSION = '0.5.2';
   var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
@@ -111,6 +111,15 @@
   shadow.appendChild(document.createElement('style')).textContent = css;
   shadow.appendChild(wrap);
   document.documentElement.appendChild(host);
+
+  (function animarEntrada() {
+    var splash = shadow.querySelector('.splash');
+    if (!splash) { return; }
+    setTimeout(function () {
+      splash.classList.add('out');
+      setTimeout(function () { if (splash.parentNode) { splash.remove(); } }, 240);
+    }, 620);
+  })();
 
   var q = function (s) { return shadow.querySelector(s); };
   var elBadge = q('.badge'), elAv = q('.av'), elName = q('.un'), elSub = q('.us');
