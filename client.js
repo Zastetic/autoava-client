@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.4.0';
+  var VERSION = '0.4.1';
   var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
@@ -90,7 +90,7 @@
   var elBadge = q('.badge'), elAv = q('.av'), elName = q('.un'), elSub = q('.us');
   var elSaldo = q('.saldo b'), elEq = q('.saldo .eq');
   var elLog = q('.log'), elBar = q('.bar2 i'), elRun = q('.run');
-  var state = { ra: '', userId: 0, nome: '', saldo: 0, api: '', busy: false, ativa: true, minima: '' };
+  var state = { ra: '', userId: 0, nome: '', saldo: 0, api: '', busy: false, ativa: true, minima: '', outdated: false };
 
   function apiBase() {
     try { return localStorage.getItem(KEY_API) || DEFAULT_API; } catch (e) { return DEFAULT_API; }
@@ -172,10 +172,11 @@
       if (!d || !d.ok) { return; }
       state.ativa = d.ativa !== false;
       state.minima = d.versao_minima || '';
+      state.outdated = !!(state.minima && cmpVersao(VERSION, state.minima) < 0);
       if (!state.ativa) {
         aviso('Ferramenta temporariamente desativada.' + (d.aviso ? ' ' + d.aviso : ''), true);
         elRun.disabled = true;
-      } else if (state.minima && cmpVersao(VERSION, state.minima) < 0) {
+      } else if (state.outdated) {
         aviso('Versao desatualizada (v' + VERSION + '). <a href="https://zastetic.github.io/autoava-client/install.html" target="_blank" rel="noopener">Atualize aqui</a>.', true);
         elRun.disabled = true;
       } else {
@@ -220,7 +221,7 @@
     field('ra', state.ra || (u.logged ? 'nao encontrado' : '-'));
     await checkVersion();
     await refreshSaldo();
-    elRun.disabled = !state.ra || state.saldo < CUSTO_SEMANA || !state.ativa;
+    elRun.disabled = !state.ra || state.saldo < CUSTO_SEMANA || !state.ativa || state.outdated;
     return state;
   }
 
@@ -278,6 +279,8 @@
 
   q('.run').addEventListener('click', async function () {
     if (state.busy) { return; }
+    if (!state.ativa) { log('ferramenta desativada no momento'); return; }
+    if (state.outdated) { log('atualize a ferramenta para executar'); return; }
     if (!state.ra) { log('sem RA'); return; }
     if (state.saldo < CUSTO_SEMANA) { log('saldo insuficiente (' + state.saldo + ')'); return; }
     state.busy = true; elRun.disabled = true;
