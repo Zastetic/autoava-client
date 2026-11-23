@@ -1,9 +1,10 @@
 (function () {
   var EXISTING = window.__autoava;
   if (EXISTING) { EXISTING.close(); return; }
-  var KEY_STORE = 'autoava:key';
-  var VERSION = '0.2.0-teste';
-  var started = Date.now();
+  var KEY_API = 'autoava:api';
+  var DEFAULT_API = 'https://www.autoava.us';
+  var VERSION = '0.3.0-teste';
+  var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
   host.id = 'autoava-root';
@@ -11,7 +12,7 @@
 
   var css = [
     ':host{all:initial}',
-    '.wrap{position:fixed;top:20px;right:20px;width:340px;z-index:2147483000;',
+    '.wrap{position:fixed;top:20px;right:20px;width:348px;z-index:2147483000;',
     'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#e8ecf1;',
     'background:#11151c;border:1px solid #232a35;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55);',
     'overflow:hidden;user-select:none;font-size:13px;line-height:1.4}',
@@ -27,23 +28,26 @@
     '.user{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid #1d242e;border-radius:10px;background:#0c1016;margin-bottom:10px}',
     '.av{width:34px;height:34px;border-radius:50%;background:#1d3b31;color:#8ef0c8;display:flex;align-items:center;',
     'justify-content:center;font-weight:700;font-size:12px;flex:0 0 34px}',
-    '.un{font-weight:600;font-size:13px;color:#e8ecf1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px}',
+    '.un{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:212px}',
     '.us{font-size:11px;color:#71808f;margin-top:2px}',
+    '.saldo{display:flex;align-items:baseline;gap:7px;padding:10px 12px;border-radius:10px;margin-bottom:10px;',
+    'background:linear-gradient(120deg,#10241d,#0e1a22);border:1px solid #1d4a3a}',
+    '.saldo b{font-size:22px;font-weight:700;color:#8ef0c8;letter-spacing:-.02em}',
+    '.saldo span{font-size:11px;color:#7d9488}',
+    '.saldo .eq{margin-left:auto;font-size:10.5px;color:#6f8a7e;text-align:right}',
     '.grid{border:1px solid #1d242e;border-radius:10px;overflow:hidden;margin-bottom:10px}',
     '.gr{display:flex;justify-content:space-between;gap:8px;padding:6px 9px;font-size:11.5px;border-bottom:1px solid #151b23}',
     '.gr:last-child{border-bottom:0}',
     '.gk{color:#71808f}.gv{color:#c3ccd8;font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right;',
-    'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}',
+    'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:196px}',
     '.gv.ok{color:#3ad29f}.gv.no{color:#e0b341}',
-    'label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#71808f;margin:0 0 5px}',
-    'input{width:100%;box-sizing:border-box;padding:8px 9px;border-radius:8px;border:1px solid #2a3441;background:#0c1016;',
-    'color:#e8ecf1;font-size:12.5px;outline:none}',
-    'input:focus{border-color:#3ad29f}',
     '.actions{display:flex;gap:6px;margin-top:10px}',
     'button.act{flex:1;padding:8px 6px;border:0;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer}',
     '.primary{background:#3ad29f;color:#08130f}.primary:hover{background:#4be0ad}',
+    '.buy{background:#33507a;color:#dbe7f7}.buy:hover{background:#3d5f8f}',
     '.ghost{background:#1c242f;color:#aab8c6}.ghost:hover{background:#25303d}',
-    '.log{margin-top:10px;height:64px;overflow:auto;background:#0a0e13;border:1px solid #1d242e;border-radius:8px;',
+    'button:disabled{opacity:.45;cursor:not-allowed}',
+    '.log{margin-top:10px;height:72px;overflow:auto;background:#0a0e13;border:1px solid #1d242e;border-radius:8px;',
     'padding:7px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:#8fa0b3}',
     '.log div{margin-bottom:2px}',
     '.foot{padding:8px 12px;border-top:1px solid #1d242e;font-size:10px;color:#5f6b7a;display:flex;justify-content:space-between}'
@@ -56,18 +60,18 @@
     '<span class="badge">fora da sessao</span><button class="x" title="Fechar">&#215;</button></div>',
     '<div class="bar2"><i></i></div>',
     '<div class="body">',
-    '<div class="user"><div class="av">?</div><div><div class="un">visitante</div><div class="us">sem nome na pagina</div></div></div>',
+    '<div class="user"><div class="av">?</div><div><div class="un">visitante</div><div class="us">sem sessao</div></div></div>',
+    '<div class="saldo"><b>0</b><span>pontos</span><div class="eq">sem saldo</div></div>',
     '<div class="grid">',
-    '<div class="gr"><span class="gk">sesskey</span><span class="gv" data-k="sesskey">-</span></div>',
+    '<div class="gr"><span class="gk">RA</span><span class="gv" data-k="ra">-</span></div>',
     '<div class="gr"><span class="gk">userId</span><span class="gv" data-k="userId">-</span></div>',
-    '<div class="gr"><span class="gk">host</span><span class="gv" data-k="host">-</span></div>',
-    '<div class="gr"><span class="gk">pagina</span><span class="gv" data-k="page">-</span></div>',
-    '<div class="gr"><span class="gk">cookie MoodleSession</span><span class="gv" data-k="cookie">-</span></div>',
-    '<div class="gr"><span class="gk">expira sessao</span><span class="gv" data-k="timeout">-</span></div>',
+    '<div class="gr"><span class="gk">sesskey</span><span class="gv" data-k="sesskey">-</span></div>',
+    '<div class="gr"><span class="gk">api</span><span class="gv" data-k="api">-</span></div>',
     '</div>',
-    '<label>Chave de acesso</label><input class="key" type="text" placeholder="cole sua chave" autocomplete="off" spellcheck="false">',
-    '<div class="actions"><button class="act primary run">Executar</button>',
-    '<button class="act ghost refresh">Atualizar</button>',
+    '<div class="actions"><button class="act primary run">Executar 1 semana</button>',
+    '<button class="act buy comprar">Comprar</button></div>',
+    '<div class="actions"><button class="act ghost refresh">Atualizar</button>',
+    '<button class="act ghost ext">Extrato</button>',
     '<button class="act ghost diag">Diagnostico</button></div>',
     '<div class="log"></div>',
     '</div>',
@@ -80,129 +84,153 @@
 
   var q = function (s) { return shadow.querySelector(s); };
   var elBadge = q('.badge'), elAv = q('.av'), elName = q('.un'), elSub = q('.us');
-  var elKey = q('.key'), elLog = q('.log'), elBar = q('.bar2 i');
-  var timer = null;
+  var elSaldo = q('.saldo b'), elEq = q('.saldo .eq');
+  var elLog = q('.log'), elBar = q('.bar2 i'), elRun = q('.run');
+  var state = { ra: '', userId: 0, nome: '', saldo: 0, api: '', busy: false };
 
+  function apiBase() {
+    try { return localStorage.getItem(KEY_API) || DEFAULT_API; } catch (e) { return DEFAULT_API; }
+  }
   function field(k, v) { var el = shadow.querySelector('[data-k="' + k + '"]'); if (el) { el.textContent = v; } }
   function log(msg) {
     var d = document.createElement('div');
     d.textContent = '[' + new Date().toLocaleTimeString('pt-BR') + '] ' + msg;
     elLog.appendChild(d); elLog.scrollTop = elLog.scrollHeight;
   }
-  function cookieValue(name) {
-    var parts = document.cookie.split(';');
-    for (var i = 0; i < parts.length; i++) {
-      var p = parts[i].trim();
-      if (p.indexOf(name + '=') === 0) { return p.slice(name.length + 1); }
-    }
-    return '';
-  }
-  function cfg() {
-    try { return (window.M && window.M.cfg) || {}; } catch (e) { return {}; }
-  }
+  function cfg() { try { return (window.M && window.M.cfg) || {}; } catch (e) { return {}; } }
+
   function detectUser() {
     var c = cfg();
-    var id = c.userId || c.userid || 0;
+    var id = parseInt(c.userId || c.userid || 0, 10) || 0;
     var info = '';
     var el = document.querySelector('.logininfo');
     if (el) { info = (el.innerText || '').replace(/\s+/g, ' ').trim(); }
-    var menu = document.querySelector('[data-region="user-menu"], .usermenu');
-    var menuTxt = menu ? (menu.innerText || '').replace(/\s+/g, ' ').trim() : '';
-    var name = '';
+    var nome = '';
     var m = info.match(/acessou como\s+(.+?)\s*\(/i);
-    if (m) { name = m[1]; }
-    if (!name && menuTxt) {
-      name = menuTxt.split('\n')[0].trim();
-      if (name.length > 60) { name = name.slice(0, 60); }
-    }
-    try {
+    if (m) { nome = m[1]; }
+    if (!nome) {
       var img = document.querySelector('img.userpicture');
-      if (!name && img && img.getAttribute('alt')) { name = img.getAttribute('alt').trim(); }
-    } catch (e) {}
-    var logged = !!(parseInt(id, 10) > 0 || name || /(^|\s)loggedin(\s|$)/.test(document.body.className));
-    return { id: parseInt(id, 10) || 0, name: name || '', logged: logged, info: info };
+      if (img && img.getAttribute('alt')) { nome = img.getAttribute('alt').trim(); }
+    }
+    var logged = !!(id > 0 || nome || /(^|\s)loggedin(\s|$)/.test(document.body.className));
+    return { id: id, nome: nome, info: info, logged: logged };
   }
-  function refresh() {
+
+  async function lookupRA() {
     var c = cfg();
+    var sesskey = c.sesskey || '';
+    var id = parseInt(c.userId || 0, 10) || 0;
+    if (!sesskey || !id) { return ''; }
+    try {
+      var url = location.origin + '/lib/ajax/service.php?sesskey=' + encodeURIComponent(sesskey);
+      var body = [{ index: 0, methodname: 'core_user_get_users_by_field', args: { field: 'id', values: [String(id)] } }];
+      var r = await fetch(url, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data = await r.json();
+      var first = Array.isArray(data) ? data[0] : null;
+      if (first && first.error) { log('RA: ' + (first.exception && first.exception.errorcode || 'erro')); return ''; }
+      var users = first && first.data ? first.data : [];
+      if (users.length && users[0].username) { return String(users[0].username); }
+    } catch (e) { log('RA lookup falhou: ' + e.message); }
+    return '';
+  }
+
+  async function api(path, opts) {
+    var r = await fetch(state.api.replace(/\/$/, '') + path, Object.assign({ cache: 'no-store' }, opts || {}));
+    var txt = await r.text();
+    try { return JSON.parse(txt); } catch (e) { return { ok: false, erro: 'resposta invalida', raw: txt.slice(0, 120) }; }
+  }
+
+  function paintSaldo() {
+    elSaldo.textContent = String(state.saldo);
+    var bims = state.saldo / 100;
+    if (!state.saldo) { elEq.textContent = 'sem saldo'; return; }
+    var txt = bims >= 1 ? (bims.toFixed(bims % 1 ? 2 : 0) + ' bimestre' + (bims === 1 ? '' : 's')) : ('~' + Math.round(bims * 4) + ' semana(s)');
+    elEq.textContent = '≈ ' + txt;
+  }
+
+  async function refreshSaldo() {
+    if (!state.ra) { state.saldo = 0; paintSaldo(); return; }
+    var d = await api('/api/pontos/saldo?ra=' + encodeURIComponent(state.ra));
+    if (d && d.ok) { state.saldo = d.saldo | 0; } else { state.saldo = 0; log('saldo: ' + (d && d.erro || 'sem resposta')); }
+    paintSaldo();
+  }
+
+  async function refresh() {
     var u = detectUser();
-    var sess = c.sesskey || '';
-    var ck = cookieValue('MoodleSession');
+    var c = cfg();
+    state.userId = u.id;
+    state.nome = u.nome;
+    state.api = apiBase();
     elBadge.textContent = u.logged ? 'sessao ativa' : 'fora da sessao';
     elBadge.className = u.logged ? 'badge on' : 'badge';
-    elName.textContent = u.name || (u.logged ? 'usuario identificado' : 'visitante');
-    var initials = (u.name || '?').split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); }).join('');
-    elAv.textContent = initials || '?';
-    elSub.textContent = u.logged ? ('userId ' + (u.id || 'n/d') + ' · ' + (location.hostname || '')) : 'sem nome na pagina';
-    field('sesskey', sess ? sess.slice(0, 4) + '...' + sess.slice(-2) : 'ausente');
+    elName.textContent = u.nome || (u.logged ? 'usuario identificado' : 'visitante');
+    elAv.textContent = (u.nome || '?').split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); }).join('') || '?';
     field('userId', u.id ? String(u.id) : '0');
-    field('host', location.hostname || '-');
-    field('page', (location.pathname || '/').slice(0, 26));
-    var cel = shadow.querySelector('[data-k="cookie"]');
-    cel.textContent = ck ? 'lido (' + ck.length + ' chars)' : 'nao visivel';
-    cel.className = 'gv ' + (ck ? 'ok' : 'no');
-    var t = parseInt(c.sessiontimeout, 10);
-    field('timeout', t ? Math.round(t / 3600) + 'h (' + t / 60 + ' min)' : '-');
-    return { cfg: c, user: u, cookie: !!ck, sesskey: sess };
+    field('sesskey', c.sesskey ? (c.sesskey.slice(0, 4) + '...' + c.sesskey.slice(-2)) : 'ausente');
+    field('api', state.api.replace(/^https?:\/\//, '').slice(0, 24));
+    elSub.textContent = u.logged ? ('userId ' + (u.id || 'n/d')) : 'sem sessao: abra a plataforma logada';
+    if (!state.ra) {
+      state.ra = await lookupRA();
+      if (state.ra) { log('RA detectado: ' + state.ra); }
+    }
+    field('ra', state.ra || (u.logged ? 'nao encontrado' : '-'));
+    await refreshSaldo();
+    elRun.disabled = !state.ra || state.saldo < CUSTO_SEMANA;
+    return state;
   }
-  function diagnostics() {
-    var d = refresh();
-    return {
-      versao: VERSION,
-      url: location.href,
-      host: location.hostname,
-      userId: d.user.id,
-      nome: d.user.name,
-      logininfo: d.user.info,
-      logged: d.user.logged,
-      sesskey_mascarado: d.sesskey ? d.sesskey.slice(0, 3) + '***' : '',
-      sesskey_len: d.sesskey ? d.sesskey.length : 0,
-      moodleSession: d.cookie,
-      cookies_lidos: document.cookie.split(';').filter(function (x) { return x.trim(); }).length,
-      localStorage_keys: Object.keys(localStorage).length,
-      sessiontimeout: d.cfg.sessiontimeout || '',
-      wwwroot: d.cfg.wwwroot || '',
-      courseId: d.cfg.courseId || '',
-      body_logged: /(^|\s)loggedin(\s|$)/.test(document.body.className)
-    };
-  }
+
   function close() {
-    if (timer) { clearInterval(timer); timer = null; }
     document.removeEventListener('keydown', onKey, true);
     host.remove();
     window.__autoava = null;
   }
   function onKey(ev) { if (ev.key === 'Escape') { close(); } }
 
-  try { elKey.value = localStorage.getItem(KEY_STORE) || ''; } catch (e) {}
-
   q('.x').addEventListener('click', close);
-  q('.refresh').addEventListener('click', function () { var u = refresh().user; log('atualizado · ' + (u.name || 'visitante')); });
-  q('.diag').addEventListener('click', function () {
-    var d = diagnostics();
-    var txt = JSON.stringify(d, null, 2);
-    navigator.clipboard.writeText(txt).then(function () { log('diagnostico copiado'); }, function () { log('nao deu para copiar'); });
-    console.log('[autoava] diagnostico', d);
+  q('.refresh').addEventListener('click', async function () { await refresh(); log('atualizado · saldo ' + state.saldo); });
+  q('.diag').addEventListener('click', async function () {
+    var d = { versao: VERSION, url: location.href, ra: state.ra, userId: state.userId, nome: state.nome, saldo: state.saldo, api: state.api };
+    try { await navigator.clipboard.writeText(JSON.stringify(d, null, 2)); log('diagnostico copiado'); } catch (e) { log('nao deu para copiar'); }
+    console.log('[autoava]', d);
   });
-  q('.run').addEventListener('click', function () {
-    var key = (elKey.value || '').trim();
-    if (!key) { log('informe a chave'); elKey.focus(); return; }
-    var d = refresh();
-    if (!d.sesskey) { log('abra a plataforma e clique de novo'); return; }
-    if (timer) { return; }
-    try { localStorage.setItem(KEY_STORE, key); } catch (e) {}
-    var passos = ['lendo sessao', 'lendo usuario', 'validando chave', 'executando', 'concluido'];
-    var i = 0;
-    elBar.style.width = '8%';
-    log('iniciando · ' + (d.user.name || 'visitante') + ' · ' + key.slice(0, 4) + '...');
-    timer = setInterval(function () {
-      if (i >= passos.length) {
-        clearInterval(timer); timer = null; elBar.style.width = '100%';
-        log('fim do teste · nenhuma execucao real');
-        return;
-      }
-      elBar.style.width = Math.round(((i + 1) / passos.length) * 100) + '%';
-      log(passos[i]); i += 1;
-    }, 650);
+  q('.ext').addEventListener('click', async function () {
+    if (!state.ra) { log('sem RA'); return; }
+    var d = await api('/api/pontos/extrato?ra=' + encodeURIComponent(state.ra));
+    if (!d || !d.ok) { log('extrato falhou'); return; }
+    log('extrato (' + d.movimentos.length + ')');
+    d.movimentos.forEach(function (m) { log((m.tipo + ' ' + (m.pontos > 0 ? '+' : '') + m.pontos + ' · ' + (m.descricao || ''))); });
+  });
+  q('.comprar').addEventListener('click', async function () {
+    if (!state.ra) { log('sem RA: entre logado na plataforma'); return; }
+    log('criando pacote de teste (400 pontos)...');
+    var d = await api('/api/pontos/compra-simulada', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ra: state.ra, pacote: 'bim4', ref: 'teste-' + Date.now() })
+    });
+    if (d && d.ok) { state.saldo = d.saldo | 0; paintSaldo(); elRun.disabled = state.saldo < CUSTO_SEMANA; log('creditado +' + d.pontos + ' · saldo ' + d.saldo); }
+    else { log('compra falhou: ' + (d && d.erro || '')); }
+  });
+
+  q('.run').addEventListener('click', async function () {
+    if (state.busy) { return; }
+    if (!state.ra) { log('sem RA'); return; }
+    if (state.saldo < CUSTO_SEMANA) { log('saldo insuficiente (' + state.saldo + ')'); return; }
+    state.busy = true; elRun.disabled = true;
+    var aid = 'demo-' + Date.now();
+    log('executando 1 semana · custo ' + CUSTO_SEMANA + ' pontos');
+    elBar.style.width = '35%';
+    var d = await api('/api/pontos/consumo', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ra: state.ra, exec_id: 'exec-' + Date.now(), itens: [{ activity_id: aid, peso: CUSTO_SEMANA, confirmado: true }] })
+    });
+    elBar.style.width = '100%';
+    if (d && d.ok) { state.saldo = d.saldo | 0; paintSaldo(); log('consumiu ' + d.cobrado + ' · saldo ' + d.saldo); }
+    else { log('consumo falhou: ' + (d && d.erro || '')); }
+    state.busy = false; elRun.disabled = state.saldo < CUSTO_SEMANA;
   });
 
   var bar = q('.bar'), drag = null;
@@ -221,8 +249,9 @@
   document.addEventListener('mouseup', function () { drag = null; });
   document.addEventListener('keydown', onKey, true);
 
-  var first = refresh();
-  log('popup carregado em ' + Math.round((Date.now() - started)) + 'ms');
-  log(first.user.logged ? ('sessao lida: ' + first.user.name) : 'sem sessao: clique na plataforma logada');
-  window.__autoava = { close: close, refresh: refresh, diagnostics: diagnostics, version: VERSION };
+  paintSaldo();
+  window.__autoava = { close: close, refresh: refresh, state: state, version: VERSION };
+  refresh().then(function () {
+    log('pronto · saldo ' + state.saldo);
+  });
 })();

@@ -6,7 +6,7 @@
 <p>Imita uma pagina logada do Moodle para testar a leitura de sessao do popup. Nao e o AVA.</p>
 <div class="logininfo">Voce acessou como MARIA SOUZA DA SILVA (Sair)</div>
 <script>
-window.M = { cfg: { wwwroot: 'https://exemplo.test', sesskey: 'AbCd1234Xy', sessiontimeout: '28800', userId: 123456, courseId: 7 } };
+window.M = { cfg: { wwwroot: location.origin, sesskey: 'AbCd1234Xy', sessiontimeout: '28800', userId: 123456, courseId: 7 } };
 Object.defineProperty(document, 'cookie', {
   configurable: true,
   get: function () { return 'MoodleSession=abcdefghijklmnopqrstuvwx; _clck=abc'; }
