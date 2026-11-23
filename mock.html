@@ -1,0 +1,15 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Mock Moodle - teste de sessao</title>
+<style>body{font-family:Arial,sans-serif;background:#f4f6f8;padding:40px;color:#1e293b}
+.logininfo{margin:18px 0;color:#475569}</style></head>
+<body class="format-site loggedin path-my chrome">
+<h1>Pagina de teste (mock)</h1>
+<p>Imita uma pagina logada do Moodle para testar a leitura de sessao do popup. Nao e o AVA.</p>
+<div class="logininfo">Voce acessou como MARIA SOUZA DA SILVA (Sair)</div>
+<script>
+window.M = { cfg: { wwwroot: 'https://exemplo.test', sesskey: 'AbCd1234Xy', sessiontimeout: '28800', userId: 123456, courseId: 7 } };
+Object.defineProperty(document, 'cookie', {
+  configurable: true,
+  get: function () { return 'MoodleSession=abcdefghijklmnopqrstuvwx; _clck=abc'; }
+});
+</script>
+</body></html>
