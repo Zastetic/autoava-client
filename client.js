@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.4.1';
+  var VERSION = '0.5.0';
   var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
@@ -50,6 +50,13 @@
     '.notice{padding:8px 12px;font-size:11.5px;line-height:1.45;background:#3a2b12;color:#e8c778;border-bottom:1px solid #4a3a1a}',
     '.notice.err{background:#3a1414;color:#f0a8a8;border-bottom-color:#4a1a1a}',
     '.notice a{color:#8ef0c8}',
+    '.cursos{margin-top:10px;max-height:210px;overflow:auto;border:1px solid #1d242e;border-radius:8px}',
+    '.curso{padding:7px 9px;border-bottom:1px solid #151b23;font-size:11.5px;cursor:pointer}',
+    '.curso:hover{background:#151d27}',
+    '.curso:last-child{border-bottom:0}',
+    '.curso b{display:block;color:#d7dee8;font-weight:600;font-size:12px;margin-bottom:2px}',
+    '.curso span{color:#7d8b9a}',
+    '.curso .tag{float:right;font-size:10px;color:#8ef0c8}',
     '.log{margin-top:10px;height:72px;overflow:auto;background:#0a0e13;border:1px solid #1d242e;border-radius:8px;',
     'padding:7px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:#8fa0b3}',
     '.log div{margin-bottom:2px}',
@@ -74,9 +81,11 @@
     '</div>',
     '<div class="actions"><button class="act primary run">Executar 1 semana</button>',
     '<button class="act buy comprar">Comprar</button></div>',
-    '<div class="actions"><button class="act ghost refresh">Atualizar</button>',
+    '<div class="actions"><button class="act ghost cursos">Cursos</button>',
+    '<button class="act ghost refresh">Atualizar</button>',
     '<button class="act ghost ext">Extrato</button>',
-    '<button class="act ghost diag">Diagnostico</button></div>',
+    '<button class="act ghost diag">Diag</button></div>',
+    '<div class="cursos" style="display:none"></div>',
     '<div class="log"></div>',
     '</div>',
     '<div class="foot"><span>AUTOAVA ferramenta</span><span>v' + VERSION + '</span></div>'
@@ -185,6 +194,91 @@
     } catch (e) { /* sem rede: segue com o que tem */ }
   }
 
+  async function ajaxMoodle(methodname, args) {
+    var c = cfg();
+    var sesskey = c.sesskey || '';
+    if (!sesskey) { return null; }
+    var url = location.origin + '/lib/ajax/service.php?sesskey=' + encodeURIComponent(sesskey);
+    var r = await fetch(url, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify([{ index: 0, methodname: methodname, args: args || {} }])
+    });
+    var data = await r.json();
+    var first = Array.isArray(data) ? data[0] : null;
+    if (!first || first.error) {
+      var code = first && first.exception && first.exception.errorcode;
+      log('AJAX ' + methodname + ': ' + (code || 'erro'));
+      return null;
+    }
+    return first.data;
+  }
+
+  async function listarCursos() {
+    var el = q('.cursos');
+    if (el.style.display === 'block') { el.style.display = 'none'; return; }
+    if (!state.userId) { log('abra a plataforma logado'); return; }
+    log('lendo cursos...');
+    var cursos = await ajaxMoodle('core_enrol_get_users_courses', { userid: state.userId });
+    if (!cursos) { log('nao consegui listar cursos'); return; }
+    el.innerHTML = '';
+    cursos.forEach(function (c) {
+      var d = document.createElement('div');
+      d.className = 'curso';
+      var pct = (c.progress !== null && c.progress !== undefined) ? c.progress + '%' : '';
+      d.innerHTML = '<span class="tag">' + pct + '</span><b></b><span></span>';
+      d.querySelector('b').textContent = c.fullname || c.shortname || ('curso ' + c.id);
+      d.querySelector('span').textContent = (c.timemodified ? 'atualizado' : '') + ' · id ' + c.id;
+      d.addEventListener('click', function () { abrirCurso(c); });
+      el.appendChild(d);
+    });
+    el.style.display = 'block';
+    log(cursos.length + ' curso(s)');
+  }
+
+  async function abrirCurso(curso) {
+    var el = q('.cursos');
+    log('lendo ' + (curso.shortname || curso.fullname));
+    var secoes = await ajaxMoodle('core_course_get_contents', { courseid: curso.id });
+    if (!secoes) { log('nao consegui ler o curso'); return; }
+    el.innerHTML = '';
+    var pendentes = 0;
+    var total = 0;
+    secoes.forEach(function (sec) {
+      var mods = sec.modules || [];
+      if (!mods.length) { return; }
+      total += mods.length;
+      var feitos = mods.filter(function (m) { return m.completiondata && m.completiondata.state === 1; }).length;
+      pendentes += mods.length - feitos;
+      var d = document.createElement('div');
+      d.className = 'curso';
+      d.innerHTML = '<span class="tag">' + feitos + '/' + mods.length + '</span><b></b><span></span>';
+      d.querySelector('b').textContent = sec.name || ('secao ' + sec.section);
+      d.querySelector('span').textContent = (mods.length - feitos) + ' pendente(s)';
+      el.appendChild(d);
+    });
+    var custo = Math.round(pendentes * (100 / Math.max(1, secoes.filter(function (x) { return (x.modules || []).length; }).length)));
+    log('curso: ' + total + ' atividades, ' + pendentes + ' pendentes · ~' + custo + ' pontos');
+    var acao = document.createElement('div');
+    acao.className = 'curso';
+    acao.innerHTML = '<b>Executar pendentes</b><span>~' + custo + ' pontos · ' + pendentes + ' atividades</span>';
+    acao.addEventListener('click', function () { executarCurso(curso, custo); });
+    el.appendChild(acao);
+  }
+
+  async function executarCurso(curso, custo) {
+    if (!state.ra) { log('sem RA'); return; }
+    if (state.saldo < custo) { log('saldo insuficiente (' + state.saldo + ' < ' + custo + ')'); return; }
+    log('pedindo execucao ao servidor...');
+    var d = await api('/api/pontos/job', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ra: state.ra, courseid: curso.id, course_url: (cfg().wwwroot || location.origin) + '/course/view.php?id=' + curso.id })
+    });
+    if (d && d.ok) { log('job criado: ' + (d.jobId || '')); return; }
+    if (d && d.erro === 'execucao_por_sessao_desligada') { log('execucao pela ferramenta ainda desligada no servidor'); return; }
+    log('falhou: ' + (d && d.erro || 'sem resposta'));
+  }
+
   function paintSaldo() {
     elSaldo.textContent = String(state.saldo);
     var bims = state.saldo / 100;
@@ -233,6 +327,7 @@
   function onKey(ev) { if (ev.key === 'Escape') { close(); } }
 
   q('.x').addEventListener('click', close);
+  q('.cursos').addEventListener('click', listarCursos);
   q('.refresh').addEventListener('click', async function () { await refresh(); log('atualizado · saldo ' + state.saldo); });
   q('.diag').addEventListener('click', async function () {
     var d = { versao: VERSION, url: location.href, ra: state.ra, userId: state.userId, nome: state.nome, saldo: state.saldo, api: state.api };
