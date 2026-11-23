@@ -7,8 +7,8 @@ sessão já aberta na página. Nenhuma automação, nenhuma senha, nenhuma chama
 
 ## Instalar (2 passos)
 
-1. Abra a página de instalação publicada pelo GitHub Pages:
-   `https://<usuario>.github.io/autoava-client/install.html`
+1. Abra a página de instalação:
+   `https://zastetic.github.io/autoava-client/install.html`
 2. Mostre a barra de favoritos (`Ctrl` + `Shift` + `B`) e **arraste** o botão verde `AutoAVA` para ela.
 
 ## Usar
