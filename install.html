@@ -22,17 +22,19 @@ pre{background:#0a0e13;border:1px solid #1d242e;border-radius:10px;padding:12px;
 font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#8fa0b3;max-height:150px}
 .warn{border-left:3px solid #e0b341;background:#1a1710;padding:12px 14px;border-radius:0 8px 8px 0;
 color:#cbb98a;font-size:13px;line-height:1.6}
+.err{border-left:3px solid #e05555;background:#1a1010;padding:12px 14px;border-radius:0 8px 8px 0;
+color:#e0a0a0;font-size:13px;line-height:1.6;margin-top:12px;display:none}
 </style></head>
 <body><div class="wrap">
 <div class="brand">AUTOAVA</div>
 <h1>Instalar o cliente em 2 passos</h1>
-<p class="sub">O cliente é só uma interface: ele lê a sessão que você já abriu e conversa com o servidor.
-Nenhuma senha é digitada aqui.</p>
+<p class="sub">O cliente e so uma interface: ele le a sessao que voce ja abriu e conversa com o servidor.
+Nenhuma senha e digitada aqui.</p>
 
 <div class="card">
   <h2>Passo 1 - mostrar a barra de favoritos</h2>
   <p class="sub" style="margin:0">No Chrome ou Edge, aperte <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>.
-  A barra aparece embaixo da barra de endereço.</p>
+  A barra aparece embaixo da barra de endereco.</p>
 </div>
 
 <div class="card">
@@ -40,9 +42,11 @@ Nenhuma senha é digitada aqui.</p>
   <div class="row">
     <a id="bm" class="btn" href="#" draggable="true">AutoAVA</a>
     <button class="btn ghost" id="copy">Copiar codigo</button>
+    <button class="btn ghost" id="demo">Testar aqui</button>
   </div>
   <p class="hint">Arraste o botao verde para a barra de favoritos. Se preferir, use "Copiar codigo",
   crie um favorito manual e cole no campo de URL.</p>
+  <div class="err" id="err"></div>
 </div>
 
 <div class="card">
@@ -53,15 +57,14 @@ Nenhuma senha é digitada aqui.</p>
     <li>O popup aparece no canto da tela: cole a chave e clique em executar.</li>
     <li><kbd>Esc</kbd> ou o X fecham o popup.</li>
   </ol>
-  <p class="hint">Teste rapido: clique em "Testar aqui" para ver o popup nesta propria pagina.</p>
-  <div class="row"><button class="btn ghost" id="demo">Testar aqui</button></div>
+  <p class="hint">"Testar aqui" mostra o popup nesta propria pagina (sem sessao, o status fica amarelo).</p>
 </div>
 
 <div class="card">
   <h2>Se nao funcionar</h2>
   <div class="warn">O favorito precisa ser clicado <strong>na pagina da plataforma</strong>, com a sessao
-  aberta. Se a pagina nao carregar o popup, confira se o favorito comeca com <code>javascript:</code>
-  e se voce nao esta em uma pagina com bloqueio de scripts.</div>
+  aberta. Se o favorito nao fizer nada, apague e arraste de novo: favorito criado com codigo quebrado
+  continua quebrado.</div>
 </div>
 
 <div class="card">
@@ -72,13 +75,22 @@ Nenhuma senha é digitada aqui.</p>
 </div>
 
 </div>
-<script id="bmcode" type="text/plain">javascript:(function () { var EXISTING = window.__autoava; if (EXISTING) { EXISTING.close(); return; } var KEY_STORE = 'autoava:key'; var VERSION = '0.1.0-teste'; var host = document.createElement('div'); host.id = 'autoava-root'; host.style.all = 'initial'; var shadow = host.attachShadow({ mode: 'open' }); var style = document.createElement('style'); style.textContent = [ ':host{all:initial}', '.wrap{position:fixed;top:24px;right:24px;width:320px;z-index:2147483000;', 'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;', 'color:#e8ecf1;background:#11151c;border:1px solid #232a35;border-radius:14px;', 'box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;user-select:none}', '.bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;', 'background:linear-gradient(90deg,#1b2430,#151a22);cursor:move}', '.brand{font-size:13px;font-weight:700;letter-spacing:.14em;color:#8ef0c8}', '.brand span{color:#7d8898;font-weight:500;letter-spacing:.02em}', '.x{width:24px;height:24px;border:0;border-radius:7px;background:#222b36;color:#aab4c2;', 'cursor:pointer;font-size:15px;line-height:1}', '.x:hover{background:#2c3744;color:#fff}', '.body{padding:14px}', '.row{display:flex;align-items:center;gap:8px;font-size:12px;color:#96a1b0;margin-bottom:12px}', '.dot{width:7px;height:7px;border-radius:50%;background:#3ad29f;box-shadow:0 0 0 3px rgba(58,210,159,.15)}', '.dot.off{background:#e0b341;box-shadow:0 0 0 3px rgba(224,179,65,.15)}', 'label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#71808f;margin-bottom:6px}', 'input{width:100%;box-sizing:border-box;padding:9px 10px;border-radius:9px;border:1px solid #2a3441;', 'background:#0c1016;color:#e8ecf1;font-size:13px;outline:none}', 'input:focus{border-color:#3ad29f}', '.actions{display:flex;gap:8px;margin-top:12px}', 'button.act{flex:1;padding:9px 10px;border:0;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer}', '.primary{background:#3ad29f;color:#08130f}', '.primary:hover{background:#4be0ad}', '.ghost{background:#1c242f;color:#aab8c6}', '.ghost:hover{background:#25303d}', '.log{margin-top:12px;height:76px;overflow:auto;background:#0a0e13;border:1px solid #1d242e;', 'border-radius:9px;padding:8px 9px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#8fa0b3}', '.log div{margin-bottom:3px}', '.foot{padding:9px 14px;border-top:1px solid #1d242e;font-size:10.5px;color:#5f6b7a;display:flex;justify-content:space-between}', '.bar2{height:4px;background:#1a212b}', '.bar2 i{display:block;height:100%;width:0;background:#3ad29f;transition:width .25s ease}' ].join(''); var wrap = document.createElement('div'); wrap.className = 'wrap'; wrap.innerHTML = [ '&lt;div class="bar"&gt;&lt;div class="brand"&gt;AUTOAVA &lt;span&gt;· teste&lt;/span&gt;&lt;/div&gt;', '&lt;button class="x" title="Fechar"&gt;&amp;#215;&lt;/button&gt;&lt;/div&gt;', '&lt;div class="bar2"&gt;&lt;i&gt;&lt;/i&gt;&lt;/div&gt;', '&lt;div class="body"&gt;', '&lt;div class="row"&gt;&lt;span class="dot off"&gt;&lt;/span&gt;&lt;span class="st"&gt;verificando sessão...&lt;/span&gt;&lt;/div&gt;', '&lt;label&gt;Chave de acesso&lt;/label&gt;', '&lt;input class="key" type="text" placeholder="cole sua chave" autocomplete="off" spellcheck="false"&gt;', '&lt;div class="actions"&gt;', '&lt;button class="act primary run"&gt;Executar teste&lt;/button&gt;', '&lt;button class="act ghost save"&gt;Salvar chave&lt;/button&gt;', '&lt;/div&gt;', '&lt;div class="log"&gt;&lt;/div&gt;', '&lt;/div&gt;', '&lt;div class="foot"&gt;&lt;span&gt;AUTOAVA&lt;/span&gt;&lt;span&gt;v' + VERSION + '&lt;/span&gt;&lt;/div&gt;' ].join(''); shadow.appendChild(style); shadow.appendChild(wrap); document.documentElement.appendChild(host); var elDot = shadow.querySelector('.dot'); var elStatus = shadow.querySelector('.st'); var elKey = shadow.querySelector('.key'); var elLog = shadow.querySelector('.log'); var elBar = shadow.querySelector('.bar2 i'); var timer = null; function log(msg) { var d = document.createElement('div'); var t = new Date().toLocaleTimeString('pt-BR'); d.textContent = '[' + t + '] ' + msg; elLog.appendChild(d); elLog.scrollTop = elLog.scrollHeight; } function sessionKey() { try { if (window.M &amp;&amp; window.M.cfg &amp;&amp; window.M.cfg.sesskey) { return String(window.M.cfg.sesskey); } } catch (e) {} return ''; } function refreshStatus() { var s = sessionKey(); if (s) { elDot.className = 'dot'; elStatus.textContent = 'sessão detectada · ' + s.slice(0, 6) + '...'; } else { elDot.className = 'dot off'; elStatus.textContent = 'sem sessão nesta página'; } } function close() { if (timer) { clearInterval(timer); timer = null; } host.remove(); window.__autoava = null; document.removeEventListener('keydown', onKey, true); } function onKey(ev) { if (ev.key === 'Escape') { close(); } } try { elKey.value = localStorage.getItem(KEY_STORE) || ''; } catch (e) {} shadow.querySelector('.x').addEventListener('click', close); shadow.querySelector('.save').addEventListener('click', function () { try { localStorage.setItem(KEY_STORE, elKey.value.trim()); } catch (e) {} log('chave salva neste navegador'); }); shadow.querySelector('.run').addEventListener('click', function () { var key = (elKey.value || '').trim(); if (!key) { log('informe a chave'); elKey.focus(); return; } if (!sessionKey()) { log('abra a plataforma e clique de novo'); return; } if (timer) { return; } var passos = ['lendo sessão', 'validando chave no servidor', 'consultando atividades', 'executando', 'concluído']; var i = 0; elBar.style.width = '8%'; log('iniciando teste com a chave ' + key.slice(0, 4) + '...'); timer = setInterval(function () { if (i &gt;= passos.length) { clearInterval(timer); timer = null; elBar.style.width = '100%'; log('fim do teste (nenhuma execução real foi feita)'); return; } elBar.style.width = Math.round(((i + 1) / passos.length) * 100) + '%'; log(passos[i]); i = i + 1; }, 700); }); var bar = shadow.querySelector('.bar'); var drag = null; bar.addEventListener('mousedown', function (ev) { if (ev.target.closest('.x')) { return; } var r = wrap.getBoundingClientRect(); drag = { x: ev.clientX, y: ev.clientY, top: r.top, left: r.left }; ev.preventDefault(); }); document.addEventListener('mousemove', function (ev) { if (!drag) { return; } wrap.style.top = Math.max(0, drag.top + ev.clientY - drag.y) + 'px'; wrap.style.left = Math.max(0, drag.left + ev.clientX - drag.x) + 'px'; wrap.style.right = 'auto'; }); document.addEventListener('mouseup', function () { drag = null; }); document.addEventListener('keydown', onKey, true); refreshStatus(); log('popup carregado na página'); window.__autoava = { close: close, version: VERSION }; })();</script>
+<script>
+window.__BM = "javascript:(function () { var EXISTING = window.__autoava; if (EXISTING) { EXISTING.close(); return; } var KEY_STORE = 'autoava:key'; var VERSION = '0.1.0-teste'; var host = document.createElement('div'); host.id = 'autoava-root'; host.style.all = 'initial'; var shadow = host.attachShadow({ mode: 'open' }); var style = document.createElement('style'); style.textContent = [ ':host{all:initial}', '.wrap{position:fixed;top:24px;right:24px;width:320px;z-index:2147483000;', 'font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif;', 'color:#e8ecf1;background:#11151c;border:1px solid #232a35;border-radius:14px;', 'box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;user-select:none}', '.bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;', 'background:linear-gradient(90deg,#1b2430,#151a22);cursor:move}', '.brand{font-size:13px;font-weight:700;letter-spacing:.14em;color:#8ef0c8}', '.brand span{color:#7d8898;font-weight:500;letter-spacing:.02em}', '.x{width:24px;height:24px;border:0;border-radius:7px;background:#222b36;color:#aab4c2;', 'cursor:pointer;font-size:15px;line-height:1}', '.x:hover{background:#2c3744;color:#fff}', '.body{padding:14px}', '.row{display:flex;align-items:center;gap:8px;font-size:12px;color:#96a1b0;margin-bottom:12px}', '.dot{width:7px;height:7px;border-radius:50%;background:#3ad29f;box-shadow:0 0 0 3px rgba(58,210,159,.15)}', '.dot.off{background:#e0b341;box-shadow:0 0 0 3px rgba(224,179,65,.15)}', 'label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#71808f;margin-bottom:6px}', 'input{width:100%;box-sizing:border-box;padding:9px 10px;border-radius:9px;border:1px solid #2a3441;', 'background:#0c1016;color:#e8ecf1;font-size:13px;outline:none}', 'input:focus{border-color:#3ad29f}', '.actions{display:flex;gap:8px;margin-top:12px}', 'button.act{flex:1;padding:9px 10px;border:0;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer}', '.primary{background:#3ad29f;color:#08130f}', '.primary:hover{background:#4be0ad}', '.ghost{background:#1c242f;color:#aab8c6}', '.ghost:hover{background:#25303d}', '.log{margin-top:12px;height:76px;overflow:auto;background:#0a0e13;border:1px solid #1d242e;', 'border-radius:9px;padding:8px 9px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#8fa0b3}', '.log div{margin-bottom:3px}', '.foot{padding:9px 14px;border-top:1px solid #1d242e;font-size:10.5px;color:#5f6b7a;display:flex;justify-content:space-between}', '.bar2{height:4px;background:#1a212b}', '.bar2 i{display:block;height:100%;width:0;background:#3ad29f;transition:width .25s ease}' ].join(''); var wrap = document.createElement('div'); wrap.className = 'wrap'; wrap.innerHTML = [ '\u003cdiv class=\"bar\">\u003cdiv class=\"brand\">AUTOAVA \u003cspan>\u00b7 teste\u003c/span>\u003c/div>', '\u003cbutton class=\"x\" title=\"Fechar\">&#215;\u003c/button>\u003c/div>', '\u003cdiv class=\"bar2\">\u003ci>\u003c/i>\u003c/div>', '\u003cdiv class=\"body\">', '\u003cdiv class=\"row\">\u003cspan class=\"dot off\">\u003c/span>\u003cspan class=\"st\">verificando sess\u00e3o...\u003c/span>\u003c/div>', '\u003clabel>Chave de acesso\u003c/label>', '\u003cinput class=\"key\" type=\"text\" placeholder=\"cole sua chave\" autocomplete=\"off\" spellcheck=\"false\">', '\u003cdiv class=\"actions\">', '\u003cbutton class=\"act primary run\">Executar teste\u003c/button>', '\u003cbutton class=\"act ghost save\">Salvar chave\u003c/button>', '\u003c/div>', '\u003cdiv class=\"log\">\u003c/div>', '\u003c/div>', '\u003cdiv class=\"foot\">\u003cspan>AUTOAVA\u003c/span>\u003cspan>v' + VERSION + '\u003c/span>\u003c/div>' ].join(''); shadow.appendChild(style); shadow.appendChild(wrap); document.documentElement.appendChild(host); var elDot = shadow.querySelector('.dot'); var elStatus = shadow.querySelector('.st'); var elKey = shadow.querySelector('.key'); var elLog = shadow.querySelector('.log'); var elBar = shadow.querySelector('.bar2 i'); var timer = null; function log(msg) { var d = document.createElement('div'); var t = new Date().toLocaleTimeString('pt-BR'); d.textContent = '[' + t + '] ' + msg; elLog.appendChild(d); elLog.scrollTop = elLog.scrollHeight; } function sessionKey() { try { if (window.M && window.M.cfg && window.M.cfg.sesskey) { return String(window.M.cfg.sesskey); } } catch (e) {} return ''; } function refreshStatus() { var s = sessionKey(); if (s) { elDot.className = 'dot'; elStatus.textContent = 'sess\u00e3o detectada \u00b7 ' + s.slice(0, 6) + '...'; } else { elDot.className = 'dot off'; elStatus.textContent = 'sem sess\u00e3o nesta p\u00e1gina'; } } function close() { if (timer) { clearInterval(timer); timer = null; } host.remove(); window.__autoava = null; document.removeEventListener('keydown', onKey, true); } function onKey(ev) { if (ev.key === 'Escape') { close(); } } try { elKey.value = localStorage.getItem(KEY_STORE) || ''; } catch (e) {} shadow.querySelector('.x').addEventListener('click', close); shadow.querySelector('.save').addEventListener('click', function () { try { localStorage.setItem(KEY_STORE, elKey.value.trim()); } catch (e) {} log('chave salva neste navegador'); }); shadow.querySelector('.run').addEventListener('click', function () { var key = (elKey.value || '').trim(); if (!key) { log('informe a chave'); elKey.focus(); return; } if (!sessionKey()) { log('abra a plataforma e clique de novo'); return; } if (timer) { return; } var passos = ['lendo sess\u00e3o', 'validando chave no servidor', 'consultando atividades', 'executando', 'conclu\u00eddo']; var i = 0; elBar.style.width = '8%'; log('iniciando teste com a chave ' + key.slice(0, 4) + '...'); timer = setInterval(function () { if (i >= passos.length) { clearInterval(timer); timer = null; elBar.style.width = '100%'; log('fim do teste (nenhuma execu\u00e7\u00e3o real foi feita)'); return; } elBar.style.width = Math.round(((i + 1) / passos.length) * 100) + '%'; log(passos[i]); i = i + 1; }, 700); }); var bar = shadow.querySelector('.bar'); var drag = null; bar.addEventListener('mousedown', function (ev) { if (ev.target.closest('.x')) { return; } var r = wrap.getBoundingClientRect(); drag = { x: ev.clientX, y: ev.clientY, top: r.top, left: r.left }; ev.preventDefault(); }); document.addEventListener('mousemove', function (ev) { if (!drag) { return; } wrap.style.top = Math.max(0, drag.top + ev.clientY - drag.y) + 'px'; wrap.style.left = Math.max(0, drag.left + ev.clientX - drag.x) + 'px'; wrap.style.right = 'auto'; }); document.addEventListener('mouseup', function () { drag = null; }); document.addEventListener('keydown', onKey, true); refreshStatus(); log('popup carregado na p\u00e1gina'); window.__autoava = { close: close, version: VERSION }; })();";
+</script>
 <script>
 (function(){
-  var code = document.getElementById('bmcode').textContent.trim();
+  var code = window.__BM;
   var a = document.getElementById('bm');
+  var err = document.getElementById('err');
   a.href = code;
   document.getElementById('src').textContent = code.slice(0, 1200) + (code.length > 1200 ? ' ...' : '');
+  try {
+    new Function(code.replace(/^javascript:/, ''));
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = 'O codigo do favorito nao compila: ' + e.message;
+  }
   document.getElementById('copy').addEventListener('click', function(){
     navigator.clipboard.writeText(code).then(function(){
       document.getElementById('copy').textContent = 'Copiado';
@@ -86,7 +98,8 @@ Nenhuma senha é digitada aqui.</p>
     });
   });
   document.getElementById('demo').addEventListener('click', function(){
-    try { (0, eval)(code.replace(/^javascript:/, '')); } catch(e) { alert('erro: ' + e.message); }
+    try { (0, eval)(code.replace(/^javascript:/, '')); }
+    catch (e) { alert('erro: ' + e.message); }
   });
 })();
 </script>
