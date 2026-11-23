@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.5.2';
+  var VERSION = '0.5.3';
   var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
@@ -56,7 +56,7 @@
     '.primary{background:#2d3ce8;color:#f5f2e9;box-shadow:3px 3px 0 #f15a43}',
     '.buy{background:#f15a43;color:#fff;box-shadow:3px 3px 0 #1d2234}',
     'button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}',
-    '.cursos{display:none;margin-top:10px;max-height:214px;overflow:auto;border:1.5px solid #1d2234;border-radius:10px;background:#f5f2e9}',
+    '.painel-cursos{display:none;margin-top:10px;max-height:214px;overflow:auto;border:1.5px solid #1d2234;border-radius:10px;background:#f5f2e9}',
     '.curso{padding:8px 10px;border-bottom:1px solid #e2e0d6;font-size:11.5px;cursor:pointer}',
     '.curso:hover{background:#eae7db}',
     '.curso:last-child{border-bottom:0}',
@@ -102,7 +102,7 @@
     '<button class="act ghost refresh">Atualizar</button>',
     '<button class="act ghost ext">Extrato</button>',
     '<button class="act ghost diag">Diag</button></div>',
-    '<div class="cursos" style="display:none"></div>',
+    '<div class="painel-cursos"></div>',
     '<div class="log"></div>',
     '</div>',
     '<div class="foot"><span>AUTOAVA ferramenta</span><span>v' + VERSION + '</span></div>'
@@ -241,7 +241,7 @@
   }
 
   async function listarCursos() {
-    var el = q('.cursos');
+    var el = q('.painel-cursos');
     if (el.style.display === 'block') { el.style.display = 'none'; return; }
     if (!state.userId) { log('abra a plataforma logado'); return; }
     log('lendo cursos...');
@@ -263,7 +263,7 @@
   }
 
   async function abrirCurso(curso) {
-    var el = q('.cursos');
+    var el = q('.painel-cursos');
     log('lendo ' + (curso.shortname || curso.fullname));
     var secoes = await ajaxMoodle('core_course_get_contents', { courseid: curso.id });
     if (!secoes) { log('nao consegui ler o curso'); return; }
