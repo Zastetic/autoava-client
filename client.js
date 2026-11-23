@@ -206,13 +206,31 @@
   });
   q('.comprar').addEventListener('click', async function () {
     if (!state.ra) { log('sem RA: entre logado na plataforma'); return; }
-    log('criando pacote de teste (400 pontos)...');
-    var d = await api('/api/pontos/compra-simulada', {
+    var local = /^http:\/\/(127\.0\.0\.1|localhost)/.test(state.api);
+    if (local) {
+      log('criando pacote de teste (400 pontos)...');
+      var t = await api('/api/pontos/compra-simulada', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ra: state.ra, pacote: 'bim4', ref: 'teste-' + Date.now() })
+      });
+      if (t && t.ok) { state.saldo = t.saldo | 0; paintSaldo(); elRun.disabled = state.saldo < CUSTO_SEMANA; log('creditado +' + t.pontos + ' · saldo ' + t.saldo); }
+      else { log('compra falhou: ' + (t && t.erro || '')); }
+      return;
+    }
+    log('criando cobranca Pix...');
+    var d = await api('/api/pontos/checkout', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ra: state.ra, pacote: 'bim4', ref: 'teste-' + Date.now() })
+      body: JSON.stringify({ ra: state.ra, pacote: 'bim4' })
     });
-    if (d && d.ok) { state.saldo = d.saldo | 0; paintSaldo(); elRun.disabled = state.saldo < CUSTO_SEMANA; log('creditado +' + d.pontos + ' · saldo ' + d.saldo); }
-    else { log('compra falhou: ' + (d && d.erro || '')); }
+    if (!d || !d.ok || !d.init_point) { log('checkout falhou: ' + (d && d.erro || 'sem init_point')); return; }
+    log('abrindo checkout · R$ ' + d.preco + ' por ' + d.pontos + ' pontos');
+    window.open(d.init_point, '_blank', 'noopener');
+    var t0 = Date.now();
+    var iv = setInterval(async function () {
+      await refreshSaldo();
+      if (state.saldo >= CUSTO_SEMANA) { clearInterval(iv); log('pagamento confirmado · saldo ' + state.saldo); elRun.disabled = false; }
+      else if (Date.now() - t0 > 300000) { clearInterval(iv); log('checkout expirou · clique Atualizar'); }
+    }, 4000);
   });
 
   q('.run').addEventListener('click', async function () {
