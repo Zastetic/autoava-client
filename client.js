@@ -119,7 +119,7 @@
       var img = document.querySelector('img.userpicture');
       if (!name && img && img.getAttribute('alt')) { name = img.getAttribute('alt').trim(); }
     } catch (e) {}
-    var logged = !!(parseInt(id, 10) > 0 || name || /loggedin/.test(document.body.className));
+    var logged = !!(parseInt(id, 10) > 0 || name || /(^|\s)loggedin(\s|$)/.test(document.body.className));
     return { id: parseInt(id, 10) || 0, name: name || '', logged: logged, info: info };
   }
   function refresh() {
@@ -162,7 +162,7 @@
       sessiontimeout: d.cfg.sessiontimeout || '',
       wwwroot: d.cfg.wwwroot || '',
       courseId: d.cfg.courseId || '',
-      body_logged: /loggedin/.test(document.body.className)
+      body_logged: /(^|\s)loggedin(\s|$)/.test(document.body.className)
     };
   }
   function close() {
