@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.3.2-teste';
+  var VERSION = '0.4.0';
   var CUSTO_SEMANA = 14;
 
   var host = document.createElement('div');
@@ -47,6 +47,9 @@
     '.buy{background:#33507a;color:#dbe7f7}.buy:hover{background:#3d5f8f}',
     '.ghost{background:#1c242f;color:#aab8c6}.ghost:hover{background:#25303d}',
     'button:disabled{opacity:.45;cursor:not-allowed}',
+    '.notice{padding:8px 12px;font-size:11.5px;line-height:1.45;background:#3a2b12;color:#e8c778;border-bottom:1px solid #4a3a1a}',
+    '.notice.err{background:#3a1414;color:#f0a8a8;border-bottom-color:#4a1a1a}',
+    '.notice a{color:#8ef0c8}',
     '.log{margin-top:10px;height:72px;overflow:auto;background:#0a0e13;border:1px solid #1d242e;border-radius:8px;',
     'padding:7px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:#8fa0b3}',
     '.log div{margin-bottom:2px}',
@@ -59,6 +62,7 @@
     '<div class="bar"><div class="brand">AUTOAVA</div>',
     '<span class="badge">fora da sessao</span><button class="x" title="Fechar">&#215;</button></div>',
     '<div class="bar2"><i></i></div>',
+    '<div class="notice" style="display:none"></div>',
     '<div class="body">',
     '<div class="user"><div class="av">?</div><div><div class="un">visitante</div><div class="us">sem sessao</div></div></div>',
     '<div class="saldo"><b>0</b><span>pontos</span><div class="eq">sem saldo</div></div>',
@@ -86,7 +90,7 @@
   var elBadge = q('.badge'), elAv = q('.av'), elName = q('.un'), elSub = q('.us');
   var elSaldo = q('.saldo b'), elEq = q('.saldo .eq');
   var elLog = q('.log'), elBar = q('.bar2 i'), elRun = q('.run');
-  var state = { ra: '', userId: 0, nome: '', saldo: 0, api: '', busy: false };
+  var state = { ra: '', userId: 0, nome: '', saldo: 0, api: '', busy: false, ativa: true, minima: '' };
 
   function apiBase() {
     try { return localStorage.getItem(KEY_API) || DEFAULT_API; } catch (e) { return DEFAULT_API; }
@@ -144,6 +148,42 @@
     try { return JSON.parse(txt); } catch (e) { return { ok: false, erro: 'resposta invalida', raw: txt.slice(0, 120) }; }
   }
 
+  function cmpVersao(a, b) {
+    var pa = String(a || '0').split('.').map(function (x) { return parseInt(x, 10) || 0; });
+    var pb = String(b || '0').split('.').map(function (x) { return parseInt(x, 10) || 0; });
+    for (var i = 0; i < Math.max(pa.length, pb.length); i++) {
+      var d = (pa[i] || 0) - (pb[i] || 0);
+      if (d !== 0) { return d > 0 ? 1 : -1; }
+    }
+    return 0;
+  }
+
+  function aviso(html, erro) {
+    var el = q('.notice');
+    if (!html) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.className = erro ? 'notice err' : 'notice';
+    el.innerHTML = html;
+    el.style.display = 'block';
+  }
+
+  async function checkVersion() {
+    try {
+      var d = await api('/api/pontos/versao');
+      if (!d || !d.ok) { return; }
+      state.ativa = d.ativa !== false;
+      state.minima = d.versao_minima || '';
+      if (!state.ativa) {
+        aviso('Ferramenta temporariamente desativada.' + (d.aviso ? ' ' + d.aviso : ''), true);
+        elRun.disabled = true;
+      } else if (state.minima && cmpVersao(VERSION, state.minima) < 0) {
+        aviso('Versao desatualizada (v' + VERSION + '). <a href="https://zastetic.github.io/autoava-client/install.html" target="_blank" rel="noopener">Atualize aqui</a>.', true);
+        elRun.disabled = true;
+      } else {
+        aviso('');
+      }
+    } catch (e) { /* sem rede: segue com o que tem */ }
+  }
+
   function paintSaldo() {
     elSaldo.textContent = String(state.saldo);
     var bims = state.saldo / 100;
@@ -178,8 +218,9 @@
       if (state.ra) { log('RA detectado: ' + state.ra); }
     }
     field('ra', state.ra || (u.logged ? 'nao encontrado' : '-'));
+    await checkVersion();
     await refreshSaldo();
-    elRun.disabled = !state.ra || state.saldo < CUSTO_SEMANA;
+    elRun.disabled = !state.ra || state.saldo < CUSTO_SEMANA || !state.ativa;
     return state;
   }
 
@@ -205,6 +246,7 @@
     d.movimentos.forEach(function (m) { log((m.tipo + ' ' + (m.pontos > 0 ? '+' : '') + m.pontos + ' · ' + (m.descricao || ''))); });
   });
   q('.comprar').addEventListener('click', async function () {
+    if (!state.ativa) { log('ferramenta desativada no momento'); return; }
     if (!state.ra) { log('sem RA: entre logado na plataforma'); return; }
     var local = /^http:\/\/(127\.0\.0\.1|localhost)/.test(state.api);
     if (local) {

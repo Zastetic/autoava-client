@@ -4,10 +4,12 @@ import json, pathlib, re
 
 base = pathlib.Path(__file__).parent
 code = (base / "bookmarklet.txt").read_text(encoding="utf-8").strip()
+bootstrap = (base / "bookmarklet-bootstrap.txt").read_text(encoding="utf-8").strip()
 if not code.startswith("javascript:"):
     raise SystemExit("bookmarklet.txt deve comecar com javascript:")
 # JSON seguro para dentro de <script>: escapa < para nao fechar a tag
 payload = json.dumps(code).replace("<", "\\u003c")
+payload_boot = json.dumps(bootstrap).replace("<", "\\u003c")
 
 page = f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -57,6 +59,8 @@ Nenhuma senha e digitada aqui.</p>
   </div>
   <p class="hint">Arraste o botao verde para a barra de favoritos. Se preferir, use "Copiar codigo",
   crie um favorito manual e cole no campo de URL.</p>
+  <p class="hint">O favorito carrega a versao atual automaticamente: quando a ferramenta for atualizada,
+  voce nao precisa arrastar de novo.</p>
   <div class="err" id="err"></div>
 </div>
 
@@ -76,6 +80,7 @@ Nenhuma senha e digitada aqui.</p>
   <div class="warn">O favorito precisa ser clicado <strong>na pagina da plataforma</strong>, com a sessao
   aberta. Se o favorito nao fizer nada, apague e arraste de novo: favorito criado com codigo quebrado
   continua quebrado.</div>
+  <p class="hint">Termos e privacidade: <a href="https://www.autoava.us/ferramenta/termos">autoava.us/ferramenta/termos</a></p>
 </div>
 
 <div class="card">
@@ -87,23 +92,25 @@ Nenhuma senha e digitada aqui.</p>
 
 </div>
 <script>
-window.__BM = {payload};
+window.__BM = {payload};\nwindow.__BM_BOOT = {payload_boot};
 </script>
 <script>
 (function(){{
   var code = window.__BM;
+  var boot = window.__BM_BOOT;
   var a = document.getElementById('bm');
   var err = document.getElementById('err');
-  a.href = code;
+  a.href = boot;
   document.getElementById('src').textContent = code.slice(0, 1200) + (code.length > 1200 ? ' ...' : '');
   try {{
     new Function(code.replace(/^javascript:/, ''));
+    new Function(boot.replace(/^javascript:/, ''));
   }} catch (e) {{
     err.style.display = 'block';
     err.textContent = 'O codigo do favorito nao compila: ' + e.message;
   }}
   document.getElementById('copy').addEventListener('click', function(){{
-    navigator.clipboard.writeText(code).then(function(){{
+    navigator.clipboard.writeText(boot).then(function(){{
       document.getElementById('copy').textContent = 'Copiado';
       setTimeout(function(){{ document.getElementById('copy').textContent = 'Copiar codigo'; }}, 1600);
     }});
