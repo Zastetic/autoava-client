@@ -60,7 +60,8 @@ Alternativa que sobrevive melhor a mudanças de layout e não depende da barra d
 
 1. Instale um gerenciador de userscripts: **Tampermonkey** ou **Violentmonkey**
    (no Firefox Android, ambos instalam pela loja de extensões do próprio Firefox).
-2. Abra `https://www.autoava.us/autoava.user.js` e confirme **Instalar**.
+2. Abra `https://zastetic.github.io/autoava-client/autoava.user.js` e confirme **Instalar**.
+   (o domínio do site não serve esse arquivo; ele fica no GitHub Pages)
 3. Abra a plataforma logada: o popup aparece sozinho (o userscript carrega o `client.js` do domínio).
 
 O arquivo `autoava.user.js` deste repositório é só um carregador — o código real vem sempre de
