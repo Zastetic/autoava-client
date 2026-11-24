@@ -3,7 +3,7 @@
   if (EXISTING) { EXISTING.close(); return; }
   var KEY_API = 'autoava:api';
   var DEFAULT_API = 'https://www.autoava.us';
-  var VERSION = '0.5.12-tipos';
+  var VERSION = '0.5.13-sessao';
   var CUSTO_SEMANA = 14;
   var PONTOS_BIMESTRE = 100;
 
@@ -372,9 +372,12 @@
       var ehIntro = /boas[- ]?vindas/i.test(rotulo) || (nomesSecoes.length > 0 && nomesSecoes.every(function (n) {
         return /conhe[cç]a o componente|mercado de trabalho/i.test(n);
       }));
+      var numeroBim = (String(rotulo).match(/([1-4])\s*[\u00ba\u00b0o]?\s*bim/i) || [])[1];
+      numeroBim = parseInt(numeroBim, 10) || (i + 1);
       return {
         courseid: p.courseid,
         url: p.course_url || '',
+        numero: numeroBim,
         nome: rotulo,
         intro: ehIntro,
         custo: ehIntro ? 0 : PONTOS_BIMESTRE,
@@ -507,21 +510,78 @@
     if (!lista.length) { log('selecione ao menos um item'); return; }
     var custo = lista.reduce(function (a, x) { return a + (x.custo || 0); }, 0);
     if (state.saldo < custo) { log('saldo insuficiente: ' + state.saldo + ' de ' + custo + ' pts · use Comprar'); return; }
+    var sessao = sessaoParaServidor();
+    if (!sessao.sesskey && !Object.keys(sessao.cookies).length) {
+      log('sem sessao: abra a plataforma logado e dispare a ferramenta de novo');
+      return;
+    }
     log('pedindo execucao de ' + lista.length + ' item(ns) · ' + custo + ' pts');
     var d = await api('/api/pontos/job', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ra: state.ra,
         custo: custo,
-        bimestres: lista.map(function (x) { return { courseid: x.courseid, course_url: x.url }; })
+        bimestres: lista.map(function (x) {
+          return { courseid: x.courseid, course_url: x.url, bimester_index: x.numero || 0 };
+        }),
+        session: sessao
       })
     });
-    if (d && d.ok) { log('job criado: ' + (d.jobId || '') + ' · acompanhe no painel'); return; }
+    if (d && d.ok) {
+      log('job ' + String(d.jobId || '').slice(0, 8) + ' iniciado · ' + d.bimestres + ' bimestre(s) · ' + d.custo + ' pts reservados');
+      acompanharJob(d.jobId);
+      return;
+    }
+    if (d && d.erro === 'saldo_insuficiente') {
+      log('faltam ' + (d.faltam || d.custo) + ' ponto(s) · use Comprar');
+      return;
+    }
+    if (d && d.erro === 'automacao_pausada') { log('automacao pausada no servidor · tente mais tarde'); return; }
+    if (d && d.erro === 'sessao_ausente') { log('servidor nao recebeu a sessao · recarregue e dispare de novo'); return; }
     if (d && String(d.erro || '').indexOf('execucao_por_sessao') === 0) {
-      log('servidor: execucao pela ferramenta em construcao');
+      log('servidor: execucao desligada (TOOL_SESSION_JOBS)');
       return;
     }
     log('falhou: ' + ((d && d.erro) || 'sem resposta'));
+  }
+
+  // A sessao nunca e guardada: vai junto do pedido, o servidor usa e descarta.
+  function sessaoParaServidor() {
+    var cookies = {};
+    String(document.cookie || '').split(';').forEach(function (par) {
+      var i = par.indexOf('=');
+      if (i < 1) { return; }
+      var k = par.slice(0, i).trim();
+      var v = par.slice(i + 1).trim();
+      if (k) { cookies[k] = v; }
+    });
+    var c = cfg();
+    return { cookies: cookies, sesskey: (c && c.sesskey) || '' };
+  }
+
+  async function acompanharJob(jobId) {
+    if (!jobId) { return; }
+    var voltas = 0;
+    var visto = '';
+    var timer = setInterval(async function () {
+      voltas += 1;
+      if (voltas > 400) { clearInterval(timer); log('job segue no servidor · reabra a ferramenta depois'); return; }
+      var d = await api('/api/pontos/job?jobId=' + encodeURIComponent(jobId));
+      if (!d || !d.ok) { return; }
+      var linha = 'job ' + String(jobId).slice(0, 8) + ': ' + (d.status || '?');
+      if (d.points_charged) { linha += ' · cobrado ' + d.points_charged + ' pts'; }
+      if (linha !== visto) { visto = linha; log(linha); }
+      if (d.status === 'succeeded' || d.status === 'failed' || d.status === 'stopped') {
+        clearInterval(timer);
+        await refreshSaldo();
+        if (d.status === 'succeeded') {
+          log('execucao concluida · saldo ' + state.saldo + ' pts');
+        } else {
+          log('execucao ' + d.status + ' · nada foi cobrado se nao houve atividade');
+        }
+        await refresh();
+      }
+    }, 6000);
   }
 
   function paintSaldo() {
